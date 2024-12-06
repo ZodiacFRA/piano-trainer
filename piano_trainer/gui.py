@@ -20,7 +20,6 @@ class GUI:
         self.notes_count = notes_count
         self.first_key_midi_idx = first_key_midi_idx
         self.last_key_midi_idx = self.first_key_midi_idx + self.notes_count
-        self.notes = [0] * self.notes_count
 
         self.KEYBOARD_WIDTH = WHITE_KEY_WIDTH * utils.get_white_keys_count(
             list(range(self.first_key_midi_idx, self.last_key_midi_idx))
@@ -33,6 +32,7 @@ class GUI:
         pygame.init()
         self.screen = pygame.display.set_mode((self.WINDOWS_WIDTH, self.WINDOW_HEIGHT))
         pygame.display.set_caption("Keyboard")
+        self.font = pygame.font.Font(None, 100)
 
     def draw_white_key(self, key_position_idx, velocity):
         color = utils.velocity_to_color(velocity) if velocity > 0 else WHITE
@@ -66,14 +66,13 @@ class GUI:
             )
 
     def draw_keyboard(self, notes_data):
-        self.screen.fill(WHITE)
-        # Draw all white notes first
+        """Draw all the keys. Looping twice as we need to draw black keys last"""
         key_position_idx = 0
         for midi_note_idx in range(self.first_key_midi_idx, self.last_key_midi_idx):
             if not utils.is_black_note(midi_note_idx):
                 self.draw_white_key(key_position_idx, notes_data[midi_note_idx])
                 key_position_idx += 1
-        # Then black notes (as they must cover the white rectangles)
+
         key_position_idx = 0
         for midi_note_idx in range(self.first_key_midi_idx, self.last_key_midi_idx):
             if not utils.is_black_note(midi_note_idx):
@@ -81,4 +80,13 @@ class GUI:
                 key_position_idx += 1
             else:
                 self.draw_black_key(key_position_idx, notes_data[midi_note_idx])
+
+    def draw_text(self, text):
+        text_surface = self.font.render(text, True, BLACK)
+        self.screen.blit(text_surface, (int(self.WINDOWS_WIDTH / 2.5), 20))
+
+    def draw(self, notes_data, text):
+        self.screen.fill(WHITE)
+        self.draw_keyboard(notes_data)
+        self.draw_text(text)
         pygame.display.flip()

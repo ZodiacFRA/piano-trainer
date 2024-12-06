@@ -15,21 +15,18 @@ class Keyboard:
 
     def __init__(self, midi_input_idx=None):
         pygame.midi.init()
-
         if midi_input_idx is None:
-            # If no midi_input_idx provided, print available devices, and use the default one
-            input_count = pygame.midi.get_count()
-            print(f"Available MIDI Input Devices: {input_count}")
-            for i in range(input_count):
-                device_info = pygame.midi.get_device_info(i)
-                # if device_info[2] == 1:  # Input device
-                print(f"ID {i}: {device_info[1].decode('utf-8')}")
             midi_input_idx = pygame.midi.get_default_input_id()
-
         self.midi_input = pygame.midi.Input(midi_input_idx)
-
-        # Initialize notes buffer (128 for full midi range)
+        # Store the velocity of each note
         self.notes_data = [0] * 128
+
+    def print_midi_devices(self):
+        input_count = pygame.midi.get_count()
+        print(f"{input_count} available MIDI Devices")
+        for i in range(input_count):
+            device_info = pygame.midi.get_device_info(i)
+            print(f"ID {i}: {device_info[1].decode('utf-8')}")
 
     def update_notes_data(self):
         while self.midi_input.poll():
@@ -42,7 +39,7 @@ class Keyboard:
                 if status_byte == 128:  # Note Off
                     velocity = 0
                 elif status_byte == 144:
-                    velocity = midi_event[2]  # Velocity (volume)
+                    velocity = midi_event[2]
                 if velocity >= 0:
                     note_idx = midi_event[1]
                     self.notes_data[note_idx] = velocity
