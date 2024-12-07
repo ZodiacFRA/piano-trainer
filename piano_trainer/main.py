@@ -1,5 +1,6 @@
 import pygame
 
+import utils
 import game_modes
 from gui import GUI
 from keyboard import Keyboard
@@ -12,7 +13,7 @@ FIRST_KEY_MIDI_IDX = 41
 def main():
     gui = GUI(KEYBOARD_KEY_COUNT, FIRST_KEY_MIDI_IDX)
     keyboard = Keyboard(3)
-    game_mode = game_modes.PlayChord()
+    game_mode = game_modes.PlayChord(results_dirpath=utils.get_app_data_dir())
 
     clock = pygame.time.Clock()
 

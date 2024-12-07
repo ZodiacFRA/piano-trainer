@@ -1,7 +1,16 @@
+import appdirs
+from pathlib import Path
+
 import pygame.midi
 
-
 BLACK_KEYS = {1, 3, 6, 8, 10}
+ENHARMONICS = {
+    "C#": "Db",
+    "D#": "Eb",
+    "F#": "Gb",
+    "G#": "Ab",
+    "A#": "Bb",
+}
 
 
 def is_black_note(midi_note_idx):
@@ -28,4 +37,17 @@ def get_note_name(midi_note_idx, include_octave=False):
     if include_octave:
         return pygame.midi.midi_to_ansi_note(midi_note_idx)
     else:
-        return pygame.midi.midi_to_ansi_note(midi_note_idx)[:-1]
+        note = pygame.midi.midi_to_ansi_note(midi_note_idx)[:-1]
+        if "-" in note:
+            raise RuntimeError("Not implemented, negative octaves must be handled here")
+        return note
+
+
+def sharp_to_flat(note_name):
+    return ENHARMONICS[note_name]
+
+
+def get_app_data_dir():
+    path = Path(appdirs.user_data_dir("piano_trainer", "zodiac"))
+    path.mkdir(parents=True, exist_ok=True)
+    return path
