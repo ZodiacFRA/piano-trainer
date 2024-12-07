@@ -14,7 +14,7 @@ Simple Piano training app I made for myself, as I'm trying to learn piano.
     ![My Image](images/PlayChord.jpg)
     ![My Image](images/PlayChordResultsTracking.jpg)
 
-I'm planning to add the following modes:
+### Planned modes:
 
 - Given a tonic and a progression (Dmin - II IV I), play it as quick as possible
 - Recognize a chord drawn on the keyboard and type its name
