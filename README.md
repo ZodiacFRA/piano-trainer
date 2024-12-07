@@ -5,6 +5,7 @@ Simple Piano training app I made for myself, as I'm trying to learn piano.
 ### Features:
 
 - MIDI connectivity (works with any MIDI compatible keyboard)
+- Keyboard's key count and leftmost key are configurable
 - Track your results' evolution over time
 - For now only 1 "mode" is implemented:
 

@@ -1,3 +1,4 @@
+import argparse
 import pygame
 
 import utils
@@ -5,13 +6,35 @@ import game_modes
 from gui import GUI
 from keyboard import Keyboard
 
-FPS = 120
-KEYBOARD_KEY_COUNT = 44
-FIRST_KEY_MIDI_IDX = 41
+
+def parse_arguments():
+    parser = argparse.ArgumentParser(
+        description="Run the game with customizable settings."
+    )
+    parser.add_argument(
+        "--fps",
+        type=int,
+        default=120,
+        help="Frames per second for the game (default: 120)",
+    )
+    parser.add_argument(
+        "--keyboard-key-count",
+        type=int,
+        default=44,
+        help="Number of keys on the keyboard (default: 44)",
+    )
+    parser.add_argument(
+        "--first-key-midi-idx",
+        type=int,
+        default=41,  # F
+        help="MIDI index of the first key on the keyboard (default: 41)",
+    )
+    return parser.parse_args()
 
 
 def main():
-    gui = GUI(KEYBOARD_KEY_COUNT, FIRST_KEY_MIDI_IDX)
+    args = parse_arguments()
+    gui = GUI(args.keyboard_key_count, args.first_key_midi_idx)
     keyboard = Keyboard(3)
     game_mode = game_modes.PlayChord(results_dirpath=utils.get_app_data_dir())
 
@@ -28,7 +51,7 @@ def main():
 
         gui_settings = game_mode.do_turn(pygame.time.get_ticks(), keyboard.notes_data)
         gui.draw(keyboard.notes_data, gui_settings)
-        clock.tick(FPS)
+        clock.tick(args.fps)
 
     keyboard.close()
     pygame.quit()
