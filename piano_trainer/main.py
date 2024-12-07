@@ -11,7 +11,7 @@ FIRST_KEY_MIDI_IDX = 41
 
 def main():
     gui = GUI(KEYBOARD_KEY_COUNT, FIRST_KEY_MIDI_IDX)
-    keyboard = Keyboard()
+    keyboard = Keyboard(3)
     game_mode = game_modes.PlayChord()
 
     clock = pygame.time.Clock()
@@ -25,8 +25,8 @@ def main():
 
         keyboard.update_notes_data()
 
-        text = game_mode.do_turn(pygame.time.get_ticks(), keyboard.notes_data)
-        gui.draw(keyboard.notes_data, text)
+        gui_settings = game_mode.do_turn(pygame.time.get_ticks(), keyboard.notes_data)
+        gui.draw(keyboard.notes_data, gui_settings)
         clock.tick(FPS)
 
     keyboard.close()

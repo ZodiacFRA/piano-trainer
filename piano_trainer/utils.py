@@ -1,5 +1,6 @@
 import pygame.midi
 
+
 BLACK_KEYS = {1, 3, 6, 8, 10}
 
 

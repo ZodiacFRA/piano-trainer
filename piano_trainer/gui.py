@@ -13,6 +13,8 @@ BLACK_KEY_HEIGHT = 90 * SCALE
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+BLUE = (0, 0, 255)
 
 
 class GUI:
@@ -85,8 +87,17 @@ class GUI:
         text_surface = self.font.render(text, True, BLACK)
         self.screen.blit(text_surface, (int(self.WINDOWS_WIDTH / 2.5), 20))
 
-    def draw(self, notes_data, text):
-        self.screen.fill(WHITE)
+    def draw(self, notes_data, gui_settings):
+        color = gui_settings.get("background_color", WHITE)
+        if "sound" in gui_settings:
+            self.play_sound(gui_settings["sound"])
+        self.screen.fill(color)
         self.draw_keyboard(notes_data)
-        self.draw_text(text)
+        self.draw_text(gui_settings["text"])
         pygame.display.flip()
+
+    def play_sound(self, filepath, volume=1.0):
+        pygame.mixer.init()
+        sound = pygame.mixer.Sound(filepath)
+        sound.set_volume(volume)
+        sound.play()

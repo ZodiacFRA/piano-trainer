@@ -15,6 +15,7 @@ class Keyboard:
 
     def __init__(self, midi_input_idx=None):
         pygame.midi.init()
+        self.print_midi_devices()
         if midi_input_idx is None:
             midi_input_idx = pygame.midi.get_default_input_id()
         self.midi_input = pygame.midi.Input(midi_input_idx)
