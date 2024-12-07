@@ -2,7 +2,7 @@ import pygame
 
 import utils
 
-SCALE = 2
+SCALE = 1.5
 # Shapes
 WHITE_KEY_WIDTH = 25 * SCALE
 WHITE_KEY_HEIGHT = 150 * SCALE
@@ -27,9 +27,10 @@ class GUI:
             list(range(self.first_key_midi_idx, self.last_key_midi_idx))
         )
 
-        self.PADDING = 2 * WHITE_KEY_WIDTH
+        self.TOP_PADDING = 2 * WHITE_KEY_WIDTH
+        self.PADDING = 1 * WHITE_KEY_WIDTH
         self.WINDOWS_WIDTH = self.KEYBOARD_WIDTH + 2 * self.PADDING
-        self.WINDOW_HEIGHT = WHITE_KEY_HEIGHT + 2 * self.PADDING
+        self.WINDOW_HEIGHT = WHITE_KEY_HEIGHT + self.TOP_PADDING + self.PADDING
 
         pygame.init()
         self.screen = pygame.display.set_mode((self.WINDOWS_WIDTH, self.WINDOW_HEIGHT))
@@ -42,12 +43,12 @@ class GUI:
         pygame.draw.rect(
             self.screen,
             color,
-            (x, self.PADDING, WHITE_KEY_WIDTH - 1, WHITE_KEY_HEIGHT),
+            (x, self.TOP_PADDING, WHITE_KEY_WIDTH - 1, WHITE_KEY_HEIGHT),
         )
         pygame.draw.rect(
             self.screen,
             (0, 0, 0),
-            (x, self.PADDING, WHITE_KEY_WIDTH - 1, WHITE_KEY_HEIGHT),
+            (x, self.TOP_PADDING, WHITE_KEY_WIDTH - 1, WHITE_KEY_HEIGHT),
             1,
         )
 
@@ -57,13 +58,13 @@ class GUI:
         pygame.draw.rect(
             self.screen,
             color,
-            (x, self.PADDING, BLACK_KEY_WIDTH, BLACK_KEY_HEIGHT),
+            (x, self.TOP_PADDING, BLACK_KEY_WIDTH, BLACK_KEY_HEIGHT),
         )
         if velocity > 0:
             pygame.draw.rect(
                 self.screen,
                 BLACK,
-                (x, self.PADDING, BLACK_KEY_WIDTH, BLACK_KEY_HEIGHT),
+                (x, self.TOP_PADDING, BLACK_KEY_WIDTH, BLACK_KEY_HEIGHT),
                 1,
             )
 

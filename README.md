@@ -1,6 +1,6 @@
 # Piano Training app
 
-Simple Piano training app I made for myself, as I'm trying to learn piano.
+Simple Piano / Music theory training app I made to improve my practice.
 
 ### Features:
 

@@ -18,12 +18,14 @@ def parse_arguments():
         help="Frames per second for the game (default: 120)",
     )
     parser.add_argument(
+        "-c",
         "--keyboard-key-count",
         type=int,
         default=44,
         help="Number of keys on the keyboard (default: 44)",
     )
     parser.add_argument(
+        "-i",
         "--first-key-midi-idx",
         type=int,
         default=41,  # F
@@ -40,6 +42,11 @@ def parse_arguments():
 
 def main():
     args = parse_arguments()
+    if args.keyboard_key_count + args.first_key_midi_idx > 128:
+        raise RuntimeError(
+            "Invalid key count - first midi note combination: "
+            + f"The highest requested note does not exist in MIDI ({args.keyboard_key_count + args.first_key_midi_idx})"
+        )
     gui = GUI(args.keyboard_key_count, args.first_key_midi_idx)
     keyboard = Keyboard(3)
     game_mode = game_modes.PlayChord(
