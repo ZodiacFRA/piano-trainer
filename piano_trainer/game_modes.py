@@ -1,8 +1,10 @@
 import os
 import time
+import copy
 import pickle
 import random
 import statistics
+from itertools import product
 from datetime import datetime
 from collections import defaultdict
 
@@ -10,13 +12,6 @@ import matplotlib.pyplot as plt
 
 import music
 import utils
-
-"""
-modes: (measure speed and accuracy everytime)
-- recognize a chord drawn on the keyboard and name it
-- play the named chord
-- play a scale (both hands?)
-"""
 
 
 def analyze_session(session_data):
@@ -53,48 +48,40 @@ def plot(global_stats):
         datetime.fromtimestamp(epoch_time).strftime("%Y-%m-%d %H:%M:%S")
         for epoch_time in list(global_stats.keys())
     ]
-    # Extract v1 data
-    v1_y = [values[0] / 1000 for values in global_stats.values()]
-    # Extract v2 data
-    v2_keys = set()
+    # Extract avg_time data
+    avg_time_y = [values[0] / 1000 for values in global_stats.values()]
+    # Root key subplot
+    root_key_data = {key: [] for key in music.KEYS}
     for values in global_stats.values():
-        v2_keys.update(values[1].keys())  # Collect all unique keys in v2
-
-    v2_data = {key: [] for key in v2_keys}
-    for values in global_stats.values():
-        v2_dict = values[1]
-        for key in v2_keys:
-            tmp = v2_dict.get(key, None)
+        root_key_dict = values[1]
+        for key in music.KEYS:
+            tmp = root_key_dict.get(key, None)
             if tmp is not None:
                 tmp /= 1000
-            v2_data[key].append(tmp)
-    # Extract v3 data (same logic as v2)
-    v3_keys = set()
+            root_key_data[key].append(tmp)
+    # Chord quality subplot
+    chord_quality_data = {key: [] for key in music.CHORDS.keys()}
     for values in global_stats.values():
-        v3_keys.update(values[2].keys())  # Collect all unique keys in v3
-
-    v3_data = {key: [] for key in v3_keys}
-    for values in global_stats.values():
-        v3_dict = values[2]
-        for key in v3_keys:
-            tmp = v3_dict.get(key, None)
+        chord_quality_dict = values[2]
+        for key in music.CHORDS.keys():
+            tmp = chord_quality_dict.get(key, None)
             if tmp is not None:
                 tmp /= 1000
-            v3_data[key].append(tmp)
+            chord_quality_data[key].append(tmp)
 
     _, axes = plt.subplots(3, 1, figsize=(12, 15), sharex=True)  # Share x-axis
-    # Plot v1
-    axes[0].plot(x, v1_y, marker="o", color="blue")
+    # Plot avg_time
+    axes[0].plot(x, avg_time_y, marker="o", color="blue")
     axes[0].set_title("Average time (s)")
     axes[0].tick_params(axis="x", which="both", bottom=False, labelbottom=False)
-    # Plot v2
-    for key, y_values in v2_data.items():
+    # Plot root_key
+    for key, y_values in root_key_data.items():
         axes[1].plot(x, y_values, marker="o", label=f"{key}")
     axes[1].set_title("Root keys average time (s)")
     axes[1].legend()
     axes[1].tick_params(axis="x", which="both", bottom=False, labelbottom=False)
-    # Plot v3
-    for key, y_values in v3_data.items():
+    # Plot chord_quality
+    for key, y_values in chord_quality_data.items():
         axes[2].plot(x, y_values, marker="o", label=f"{key}")
     axes[2].set_xlabel("Session date")
     axes[2].set_title("Chord qualities average time (s)")
@@ -104,7 +91,7 @@ def plot(global_stats):
     plt.show()
 
 
-def analyze_and_plot(results_filepath, session_results):
+def analyze_and_save(results_filepath, session_results, show_plot):
     session_results = session_results
     results_filepath = results_filepath
     epoch_time = int(time.time())
@@ -124,21 +111,36 @@ def analyze_and_plot(results_filepath, session_results):
     global_stats = {}
     for session_timestamp, session_data in global_results.items():
         global_stats[session_timestamp] = analyze_session(session_data)
-    plot(global_stats)
+    if show_plot:
+        plot(global_stats)
 
 
 class PlayChord:
-    def __init__(self, results_dirpath):
+    def __init__(self, results_dirpath, show_plot):
+        self.show_plot = show_plot
         self.results_dirpath = results_dirpath
         self.results_filepath = os.path.join(results_dirpath, "playchord.pkl")
-        self.choose_new_chord(0)
         self.results = {}
+        # To ensure a useful random repartition, construct all the possible combinations
+        # and we'll pop them one by one
+        root_notes_midi_idxs = list(range(60, 72))
+        chord_qualities = list(music.CHORDS.items())
+        self.total_available_chords = list(
+            product(root_notes_midi_idxs, chord_qualities)
+        )
+        self.chords = copy.deepcopy(self.total_available_chords)
+        random.shuffle(self.chords)
+        self.choose_new_chord(0)
 
     def __del__(self):
-        analyze_and_plot(self.results_filepath, self.results)
+        analyze_and_save(self.results_filepath, self.results, self.show_plot)
 
     def get_display_text(self):
-        res = self.target_chord_text[0] + self.target_chord_text[1]
+        # Remove the explicit Major notation if needed
+        tmp = self.target_chord_data[1]
+        if tmp == "Major":
+            tmp = ""
+        res = self.target_chord_data[0] + tmp
         if len(self.results) > 0:
             avg_time_to_find = (sum(self.results.values()) / len(self.results)) / 1000
             res += f"{' '*10}{avg_time_to_find:.2f}"
@@ -146,7 +148,9 @@ class PlayChord:
 
     def choose_new_chord(self, tick):
         self.start_timer = tick
-        root_note_idx = random.randint(60, 71)
+        if not self.chords:
+            self.chords = copy.deepcopy(self.total_available_chords)
+        root_note_idx, chord_quality = self.chords.pop()
         # Here, if possible, we want to randomly chose between enharmonic notes.
         # The name string is not used for the program logic, only display and logging
         # which is perfect as we want the stats to differentiate between enharmonic notes.
@@ -156,11 +160,10 @@ class PlayChord:
         if "#" in root_note_name and random.randint(0, 1):
             root_note_name = utils.sharp_to_flat(root_note_name)
 
-        chord_quality = random.choice(list(music.CHORDS.items()))
         self.target_chord_notes = set(
             utils.get_chord_notes_names(root_note_idx, chord_quality[1])
         )
-        self.target_chord_text = (root_note_name, chord_quality[0])
+        self.target_chord_data = (root_note_name, chord_quality[0])
 
     def do_turn(self, tick, notes_data):
         played_notes_idxs = [
@@ -172,7 +175,7 @@ class PlayChord:
         if self.target_chord_notes == played_notes:
             # User played the correct chord
             time_to_find = tick - self.start_timer
-            self.results[self.target_chord_text] = time_to_find
+            self.results[self.target_chord_data] = time_to_find
             self.choose_new_chord(tick)
             return {
                 "text": self.get_display_text(),

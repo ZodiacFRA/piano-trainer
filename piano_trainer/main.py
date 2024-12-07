@@ -29,6 +29,12 @@ def parse_arguments():
         default=41,  # F
         help="MIDI index of the first key on the keyboard (default: 41)",
     )
+    parser.add_argument(
+        "--plot",
+        type=bool,
+        default=False,
+        help="Whether or not you want to plot the test results at the end",
+    )
     return parser.parse_args()
 
 
@@ -36,7 +42,9 @@ def main():
     args = parse_arguments()
     gui = GUI(args.keyboard_key_count, args.first_key_midi_idx)
     keyboard = Keyboard(3)
-    game_mode = game_modes.PlayChord(results_dirpath=utils.get_app_data_dir())
+    game_mode = game_modes.PlayChord(
+        results_dirpath=utils.get_app_data_dir(), show_plot=args.plot
+    )
 
     clock = pygame.time.Clock()
 
